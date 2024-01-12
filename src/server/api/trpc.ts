@@ -23,7 +23,8 @@ import { db } from '~/server/db';
  * wrap this and provides the required context.
  *
  * @see https://trpc.io/docs/server/context
- */
+*/
+// eslint-disable-next-line @typescript-eslint/require-await
 export const createTRPCContext = async (opts: { headers: Headers }) => ({
   db,
   ...opts,
