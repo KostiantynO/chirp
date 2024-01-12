@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
@@ -16,13 +17,15 @@ export const metadata = {
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en">
-    <body className={`font-sans ${inter.variable}`}>
-      <TRPCReactProvider cookies={cookies().toString()}>
-        {children}
-      </TRPCReactProvider>
-    </body>
-  </html>
+  <ClerkProvider>
+    <html lang="en">
+      <body className={`font-sans ${inter.variable}`}>
+        <TRPCReactProvider cookies={cookies().toString()}>
+          {children}
+        </TRPCReactProvider>
+      </body>
+    </html>
+  </ClerkProvider>
 );
 
 export default RootLayout;
