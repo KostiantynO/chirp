@@ -5,6 +5,8 @@ import Image from 'next/image';
 
 import { api } from '~/trpc/server';
 
+import { LoadingPage, LoadingSpinner } from './_components/loading';
+
 import type { RouterOutputs } from '~/trpc/shared';
 
 dayjs.extend(relativeTime);
@@ -58,13 +60,27 @@ const PostView = ({
   </div>
 );
 
+const Feed = async () => {
+  const posts = await api.posts.getAll.query();
+  if (!posts) return <LoadingPage />;
+  if (!posts.length) return <div>No posts</div>;
+
+  return (
+    <div className="flex flex-col">
+      {posts?.map(fullPost => (
+        <PostView key={fullPost.post.id} {...fullPost} />
+      ))}
+    </div>
+  );
+};
+
 const Home = async () => {
   const user = auth();
 
-  const posts = await api.posts.getAll.query();
+  // start fetching asap
+  api.posts.getAll.query().catch(console.error);
 
-  if (!posts) return <div>Loading...</div>;
-  if (!posts.length) return <div>No posts</div>;
+  if (!user) return null;
 
   return (
     <main className="flex h-screen justify-center ">
@@ -83,11 +99,7 @@ const Home = async () => {
           )}
         </div>
 
-        <div className="flex flex-col">
-          {posts?.map(fullPost => (
-            <PostView key={fullPost.post.id} {...fullPost} />
-          ))}
-        </div>
+        <Feed />
       </div>
     </main>
   );
