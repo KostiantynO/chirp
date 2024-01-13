@@ -7,4 +7,5 @@ git rm yarn.lock --cached
 
 npx prisma db push
 yarn
+yarn add dayjs
 ```
