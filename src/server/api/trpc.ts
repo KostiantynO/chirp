@@ -6,7 +6,8 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from '@trpc/server';
+import { auth } from '@clerk/nextjs';
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 
@@ -23,12 +24,21 @@ import { db } from '~/server/db';
  * wrap this and provides the required context.
  *
  * @see https://trpc.io/docs/server/context
-*/
+ */
 // eslint-disable-next-line @typescript-eslint/require-await
-export const createTRPCContext = async (opts: { headers: Headers }) => ({
-  db,
-  ...opts,
-});
+export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const { userId } = auth();
+
+  if (!userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized' });
+  }
+
+  return {
+    db,
+    userId,
+    ...opts,
+  };
+};
 
 /**
  * 2. INITIALIZATION
@@ -62,6 +72,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  */
 export const createTRPCRouter = t.router;
 
+export const { createCallerFactory } = t;
+
 /**
  * Public (unauthenticated) procedure
  *
@@ -70,3 +82,17 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
+
+const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not authorized' });
+  }
+
+  return next({
+    ctx: {
+      userId: ctx.userId,
+    },
+  });
+});
+
+export const privateProcedure = t.procedure.use(enforceUserIsAuthed);
