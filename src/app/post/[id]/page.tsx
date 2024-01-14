@@ -1,10 +1,9 @@
-'use client';
-import { useParams } from 'next/navigation';
+export const metadata = {
+  title: 'post',
+};
 
-const SinglePostPage = () => {
-  const { id } = useParams<{ id: string }>();
-
-  const a = JSON.stringify({ id }, null, 2)
+const SinglePostPage = ({ params: { id } }: { params: { id: string } }) => {
+  const a = JSON.stringify({ id }, null, 2);
 
   return <div>{a}</div>;
 };
