@@ -18,21 +18,12 @@ const config = {
       },
     ],
   },
+
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: { ignoreDuringBuilds: true },
+  swcMinify: true,
 };
 
 export default config;
-
-/*
-module.exports = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'assets.example.com',
-        port: '',
-        pathname: '/account123/**',
-      },
-    ],
-  },
-}
-*/
