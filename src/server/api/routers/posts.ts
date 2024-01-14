@@ -11,6 +11,29 @@ import {
 } from '~/server/api/trpc';
 import { filterUserForClient } from '~/server/helpers/filterUserForClient';
 
+import type { Post } from '@prisma/client';
+
+const addUserDataToPosts = async (posts: Post[]) => {
+  const users = (
+    await clerkClient.users.getUserList({
+      userId: posts.map(({ authorId }) => authorId),
+      limit: 100,
+    })
+  ).map(filterUserForClient);
+
+  return posts.map(post => {
+    const author = users.find(({ id }) => id === post.authorId);
+
+    if (!author?.username)
+      throw new TRPCError({
+        message: 'Author for post not found',
+        code: 'INTERNAL_SERVER_ERROR',
+      });
+
+    return { post, author: { ...author, username: author.username } };
+  });
+};
+
 // 3 requests per 1 minute
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -26,24 +49,7 @@ export const postsRouter = createTRPCRouter({
       orderBy: [{ createdAt: 'desc' }],
     });
 
-    const users = (
-      await clerkClient.users.getUserList({
-        userId: posts.map(({ authorId }) => authorId),
-        limit: 100,
-      })
-    ).map(filterUserForClient);
-
-    return posts.map(post => {
-      const author = users.find(({ id }) => id === post.authorId);
-
-      if (!author?.username)
-        throw new TRPCError({
-          message: 'Author for post not found',
-          code: 'INTERNAL_SERVER_ERROR',
-        });
-
-      return { post, author: { ...author, username: author.username } };
-    });
+    return addUserDataToPosts(posts);
   }),
 
   create: privateProcedure
@@ -67,4 +73,22 @@ export const postsRouter = createTRPCRouter({
 
       return post;
     }),
+
+  getPostsByUsedId: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(({ ctx, input }) =>
+      ctx.db.post
+        .findMany({
+          where: {
+            authorId: input.userId,
+          },
+          take: 100,
+          orderBy: [{ createdAt: 'desc' }],
+        })
+        .then(addUserDataToPosts)
+    ),
 });

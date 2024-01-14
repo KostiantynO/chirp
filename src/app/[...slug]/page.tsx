@@ -2,7 +2,22 @@ import Image from 'next/image';
 
 import { api } from '~/trpc/server';
 
+import { PostView } from '../_components/PostView';
+
 import type { Metadata } from 'next';
+
+const ProfileFeed = async ({ userId }: { userId: string }) => {
+  const userPosts = await api.posts.getPostsByUsedId.query({ userId });
+
+  if (!userPosts) return <div>Loading...</div>;
+  if (!userPosts.length) return <div>User has not posted</div>;
+
+  const posts = userPosts.map(fullPost => (
+    <PostView key={fullPost.post.id} {...fullPost} />
+  ));
+
+  return <div className="flex flex-col">{posts}</div>;
+};
 
 type Props = {
   params: { slug: string[] };
@@ -43,7 +58,7 @@ const ProfilePage = async ({
     return <div>No user info</div>;
   }
 
-  const { username, imageUrl } = user;
+  const { username, imageUrl, id } = user;
 
   const nameHandle = `@${username}`;
 
@@ -62,6 +77,7 @@ const ProfilePage = async ({
       <div className="h-16" />
       <div className="p-4 text-2xl font-bold">{nameHandle}</div>
       <div className="w-full border-b border-slate-400" />
+      <ProfileFeed userId={id} />
     </>
   );
 };
