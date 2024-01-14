@@ -10,4 +10,5 @@ yarn
 yarn add dayjs
 
 yarn add @upstash/ratelimit @upstash/redis
+yarn add react-hot-toast
 ```

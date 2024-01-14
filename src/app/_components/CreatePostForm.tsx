@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 import { api } from '~/trpc/react';
+
+import { LoadingSpinner } from './loading';
 
 import type { ChangeEvent, FormEvent } from 'react';
 
@@ -15,6 +18,12 @@ export const CreatePostForm = () => {
     async onSuccess() {
       setInput('');
       await utils.posts.getAll.invalidate();
+    },
+    onError(error) {
+      const errorMessage =
+        error.data?.zodError?.fieldErrors.content?.[0] ?? 'Failed to post!';
+
+      toast.error(errorMessage);
     },
   });
 
@@ -38,9 +47,17 @@ export const CreatePostForm = () => {
         onChange={onChangeSetInput}
       />
 
-      <button type="submit" disabled={isPosting}>
-        Post
-      </button>
+      {input && !isPosting && (
+        <button type="submit" disabled={isPosting}>
+          Post
+        </button>
+      )}
+
+      {isPosting && (
+        <div className="flex items-center justify-center ">
+          <LoadingSpinner size={20} />
+        </div>
+      )}
     </form>
   );
 };

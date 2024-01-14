@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
+import { Toaster } from 'react-hot-toast';
 
 import '~/styles/globals.css';
 import { TRPCReactProvider } from '~/trpc/react';
@@ -23,6 +24,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
         <TRPCReactProvider cookies={cookies().toString()}>
           {children}
         </TRPCReactProvider>
+        <Toaster position="bottom-center" />
       </body>
     </html>
   </ClerkProvider>

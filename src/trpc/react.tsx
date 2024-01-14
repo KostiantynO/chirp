@@ -9,7 +9,7 @@ import { getUrl, transformer } from './shared';
 
 import type { AppRouter } from '~/server/api/root';
 
-export const api = createTRPCReact<AppRouter>();
+export const api = createTRPCReact<AppRouter>({});
 
 export const TRPCReactProvider = (props: {
   children: React.ReactNode;

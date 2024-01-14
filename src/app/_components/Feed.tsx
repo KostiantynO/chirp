@@ -41,7 +41,9 @@ const PostView = ({
 };
 
 export const Feed = () => {
-  const { data: posts, isLoading } = api.posts.getAll.useQuery();
+  const { data: posts, isLoading } = api.posts.getAll.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
 
   if (isLoading) return <LoadingPage />;
   if (!posts) return <div>Error while fetching posts</div>;
